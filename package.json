@@ -1,0 +1,27 @@
+{
+  "name": "@usermatic/server",
+  "version": "0.0.1",
+  "description": "Server utils for usermatic apps.",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "repository": "https://github.com/usermatic/server-utils",
+  "author": "Mark Logan (mlogan@gmail.com)",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "yarn tsc",
+    "test": "yarn jest",
+    "prepare": "yarn test && yarn build"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@types/jsonwebtoken": "^8.3.9",
+    "@types/node": "^13.13.0",
+    "jest": "^25.4.0",
+    "ts-jest": "^25.4.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
+}
