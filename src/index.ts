@@ -23,7 +23,17 @@ const ReauthToken = Record({
 
 export type ReauthToken = Static<typeof ReauthToken>
 
-export const verifyJwt = (token: string, key: string): string | object => {
+export type VerifyOptions = {
+  maxAge?: string,
+  clockTimestamp?: number
+}
+
+export const verifyJwt = (
+  token: string,
+  key: string,
+  options: VerifyOptions = {}
+): string | object => {
+
   if (typeof(key) !== 'string' || key.length < 27) {
     throw new Error(
       'Insufficient key. Make sure you are using the secret obtained from ' +
@@ -31,11 +41,15 @@ export const verifyJwt = (token: string, key: string): string | object => {
     )
   }
 
-  return jwt.verify(token, key, { algorithms: ['HS256'] })
+  return jwt.verify(token, key, { ...options, algorithms: ['HS256'] })
 }
 
-export const verifyAuthToken = (token: string, key: string): AuthToken => {
-  const verified = verifyJwt(token, key)
+export const verifyAuthToken = (
+  token: string,
+  key: string,
+  options: VerifyOptions = {}
+): AuthToken => {
+  const verified = verifyJwt(token, key, options)
   if (!AuthToken.guard(verified)) {
     throw new Error(`malformed AuthToken: ${ JSON.stringify(verified) }`)
   }
@@ -44,10 +58,14 @@ export const verifyAuthToken = (token: string, key: string): AuthToken => {
 
 type ReauthenticationMethod = 'password' | 'mfa'
 
-export const verifyReauthToken =
-(token: string, key: string, requiredMethods: ReauthenticationMethod[]): ReauthToken => {
+export const verifyReauthToken = (
+  token: string,
+  key: string,
+  requiredMethods: ReauthenticationMethod[],
+  options: VerifyOptions = {}
+): ReauthToken => {
 
-  const contents = verifyJwt(token, key)
+  const contents = verifyJwt(token, key, options)
   if (!ReauthToken.guard(contents)) {
     console.error("malformed reauth token", JSON.stringify(contents))
     throw new Error("malformed reauth token")

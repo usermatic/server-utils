@@ -51,7 +51,21 @@ describe('algorithm tests', () => {
 describe('authtoken tests', () => {
   const key = 'fB4KvCrgHH/OpLUQq+e2jWHVzEc'
   const id = '51fcefc7-45cb-4ae5-9945-9b39817c6b24'
-  const payload = { id }
+  const iat = 1588011836
+  const payload = { id, iat }
+
+  test('test maxAge', () => {
+    const token = jwt.sign(payload, key)
+    const verified1 = verifyAuthToken(token, key, { maxAge: '60s', clockTimestamp: iat })
+    expect(verified1.id).toBe(id)
+
+    const verified2 = verifyAuthToken(token, key, { maxAge: '60s', clockTimestamp: iat + 59 })
+    expect(verified2.id).toBe(id)
+
+    expect(() => {
+      verifyAuthToken(token, key, { maxAge: '60s', clockTimestamp: iat + 60 })
+    }).toThrow(/maxAge exceeded/)
+  })
 
   test('test return type', () => {
     const token = jwt.sign(payload, key)
@@ -76,6 +90,22 @@ describe('reauthtoken tests', () => {
   const operation = 'delete'
   const id = 123
   const userPayload = { operation, id }
+
+  test('test maxAge', () => {
+    const iat = 1588011836
+    const payload = {
+      userContents: JSON.stringify(userPayload),
+      reauthenticationMethods: ['password'],
+      iat
+    }
+    const token = jwt.sign(payload, key)
+    const verified = verifyReauthToken(token, key, ['password'], { maxAge: '60s', clockTimestamp: iat + 10 })
+    expect(JSON.parse(verified.userContents)).toMatchObject(userPayload)
+
+    expect(() => {
+      verifyReauthToken(token, key, ['password'], { maxAge: '60s', clockTimestamp: iat + 60 })
+    }).toThrow(/maxAge exceeded/)
+  })
 
   test('test 1 methods required', () => {
     const payload = {
