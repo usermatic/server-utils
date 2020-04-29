@@ -88,12 +88,13 @@ describe('authtoken tests', () => {
 describe('reauthtoken tests', () => {
   const key = 'fB4KvCrgHH/OpLUQq+e2jWHVzEc'
   const operation = 'delete'
-  const id = 123
+  const id = '51fcefc7-45cb-4ae5-9945-9b39817c6b24'
   const userPayload = { operation, id }
 
   test('test maxAge', () => {
     const iat = 1588011836
     const payload = {
+      id,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password'],
       iat
@@ -109,6 +110,7 @@ describe('reauthtoken tests', () => {
 
   test('test 1 methods required', () => {
     const payload = {
+      id,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password']
     }
@@ -120,6 +122,7 @@ describe('reauthtoken tests', () => {
 
   test('test methods present', () => {
     const payload = {
+      id,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password']
     }
@@ -130,6 +133,7 @@ describe('reauthtoken tests', () => {
 
   test('test methods missing', () => {
     const payload = {
+      id,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password']
     }

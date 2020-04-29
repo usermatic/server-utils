@@ -17,6 +17,7 @@ export const AuthToken = Record({
 export type AuthToken = Static<typeof AuthToken>
 
 const ReauthToken = Record({
+  id: UUID,
   userContents: String,
   reauthenticationMethods: Array(String)
 })
