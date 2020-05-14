@@ -8,6 +8,10 @@
   "author": "Mark Logan (mlogan@gmail.com)",
   "license": "MIT",
   "private": false,
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "yarn tsc",
     "test": "yarn jest",
