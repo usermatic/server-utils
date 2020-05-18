@@ -1,5 +1,5 @@
 
-import { Record, String, Array, Static } from 'runtypes'
+import { Boolean, Record, String, Array, Static } from 'runtypes'
 import jwt from 'jsonwebtoken'
 
 const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -18,6 +18,7 @@ export type AuthToken = Static<typeof AuthToken>
 
 const ReauthToken = Record({
   id: UUID,
+  login: Boolean,
   userContents: String,
   reauthenticationMethods: Array(String)
 })

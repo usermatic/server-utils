@@ -95,6 +95,7 @@ describe('reauthtoken tests', () => {
     const iat = 1588011836
     const payload = {
       id,
+      login: false,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password'],
       iat
@@ -111,6 +112,7 @@ describe('reauthtoken tests', () => {
   test('test 1 methods required', () => {
     const payload = {
       id,
+      login: false,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password']
     }
@@ -123,6 +125,7 @@ describe('reauthtoken tests', () => {
   test('test methods present', () => {
     const payload = {
       id,
+      login: false,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password']
     }
@@ -134,6 +137,7 @@ describe('reauthtoken tests', () => {
   test('test methods missing', () => {
     const payload = {
       id,
+      login: false,
       userContents: JSON.stringify(userPayload),
       reauthenticationMethods: ['password']
     }
