@@ -1,7 +1,12 @@
 
 const jwt = require('jsonwebtoken')
 
-import { verifyJwt, verifyAuthToken, verifyReauthToken } from '../src/index'
+import {
+  verifyJwt,
+  verifyAuthToken,
+  verifyReauthToken,
+  ReauthToken
+} from '../src/index'
 
 describe('algorithm tests', () => {
 
@@ -145,5 +150,29 @@ describe('reauthtoken tests', () => {
     expect(() => {
       verifyReauthToken(token, key, ['mfa'])
     }).toThrow(/The following required re-authentication methods were missing: mfa/)
+  })
+
+  test('test methods predicate', () => {
+    const payload: ReauthToken = {
+      id,
+      login: false,
+      userContents: JSON.stringify(userPayload),
+      reauthenticationMethods: ['mfa']
+    }
+    const token = jwt.sign(payload, key)
+
+    verifyReauthToken(token, key, (methods) => {
+      return methods.includes('password') || methods.includes('mfa')
+    })
+
+    expect(() => {
+      verifyReauthToken(token, key, (methods) => {
+        if (methods.includes('mfa')) {
+          throw new Error("disallowed reauthentictation method mfa")
+        } else {
+          return true
+        }
+      })
+    }).toThrow(/disallowed reauthentictation method mfa/)
   })
 })

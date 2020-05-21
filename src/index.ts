@@ -1,5 +1,5 @@
 
-import { Boolean, Record, String, Array, Static } from 'runtypes'
+import * as rt from 'runtypes'
 import jwt from 'jsonwebtoken'
 
 const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -8,22 +8,30 @@ const isUUID = (s: string) => {
   return uuidRe.test(s)
 }
 
-const UUID = String.withConstraint((s) => isUUID(s))
+const UUID = rt.String.withConstraint((s) => isUUID(s))
 
-export const AuthToken = Record({
+export const AuthToken = rt.Record({
   id: UUID
 })
 
-export type AuthToken = Static<typeof AuthToken>
+export type AuthToken = rt.Static<typeof AuthToken>
 
-const ReauthToken = Record({
+export const ReauthenticationMethod = rt.Union(
+  rt.Literal('password'),
+  rt.Literal('oauth'),
+  rt.Literal('mfa')
+)
+
+export type ReauthenticationMethod = rt.Static<typeof ReauthenticationMethod>
+
+export const ReauthToken = rt.Record({
   id: UUID,
-  login: Boolean,
-  userContents: String,
-  reauthenticationMethods: Array(String)
+  login: rt.Boolean,
+  userContents: rt.String,
+  reauthenticationMethods: rt.Array(ReauthenticationMethod)
 })
 
-export type ReauthToken = Static<typeof ReauthToken>
+export type ReauthToken = rt.Static<typeof ReauthToken>
 
 export type VerifyOptions = {
   maxAge?: string,
@@ -58,12 +66,12 @@ export const verifyAuthToken = (
   return verified
 }
 
-type ReauthenticationMethod = 'password' | 'mfa'
+export type ReauthMethodPredicate = (methods: ReauthenticationMethod[]) => boolean
 
 export const verifyReauthToken = (
   token: string,
   key: string,
-  requiredMethods: ReauthenticationMethod[],
+  requiredMethods: ReauthMethodPredicate | ReauthenticationMethod[],
   options: VerifyOptions = {}
 ): ReauthToken => {
 
@@ -72,17 +80,24 @@ export const verifyReauthToken = (
     console.error("malformed reauth token", JSON.stringify(contents))
     throw new Error("malformed reauth token")
   }
-  if (requiredMethods.length == 0) {
-    throw new Error("Must supply at least one required re-authentication method")
-  }
-  const missingMethods = requiredMethods.filter(
-    m => !contents.reauthenticationMethods.includes(m)
-  )
-  if (missingMethods.length > 0) {
-    throw new Error(
-      'The following required re-authentication methods were missing: '
-      + missingMethods.join(', ')
+  if (Array.isArray(requiredMethods)) {
+    if (requiredMethods.length == 0) {
+      throw new Error("Must supply at least one required re-authentication method")
+    }
+    const missingMethods = requiredMethods.filter(
+      m => !contents.reauthenticationMethods.includes(m)
     )
+    if (missingMethods.length > 0) {
+      throw new Error(
+        'The following required re-authentication methods were missing: '
+        + missingMethods.join(', ')
+      )
+    }
+  } else {
+    if (!requiredMethods(contents.reauthenticationMethods)) {
+      // requiredMethods should usually throw its own more descriptive error.
+      throw new Error('required methods predicate failed')
+    }
   }
 
   return contents
