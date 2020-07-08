@@ -123,7 +123,7 @@ describe('reauthtoken tests', () => {
     }
     const token = jwt.sign(payload, key)
     expect(() => {
-      verifyReauthToken(token, key, [])
+      verifyReauthToken(token, key, [], { maxAge: "60s" })
     }).toThrow(/Must supply at least one.*method/)
   })
 
@@ -135,7 +135,7 @@ describe('reauthtoken tests', () => {
       reauthenticationMethods: ['password']
     }
     const token = jwt.sign(payload, key)
-    const verified = verifyReauthToken(token, key, ['password'])
+    const verified = verifyReauthToken(token, key, ['password'], { maxAge: "60s" })
     expect(JSON.parse(verified.userContents)).toMatchObject(userPayload)
   })
 
@@ -148,7 +148,7 @@ describe('reauthtoken tests', () => {
     }
     const token = jwt.sign(payload, key)
     expect(() => {
-      verifyReauthToken(token, key, ['mfa'])
+      verifyReauthToken(token, key, ['mfa'], { maxAge: "60s" })
     }).toThrow(/The following required re-authentication methods were missing: mfa/)
   })
 
@@ -163,7 +163,7 @@ describe('reauthtoken tests', () => {
 
     verifyReauthToken(token, key, (methods) => {
       return methods.includes('password') || methods.includes('mfa')
-    })
+    }, { maxAge: "60s" })
 
     expect(() => {
       verifyReauthToken(token, key, (methods) => {
@@ -172,7 +172,7 @@ describe('reauthtoken tests', () => {
         } else {
           return true
         }
-      })
+      }, { maxAge: "60s" })
     }).toThrow(/disallowed reauthentictation method mfa/)
   })
 })

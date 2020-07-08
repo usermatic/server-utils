@@ -33,6 +33,11 @@ export const ReauthToken = rt.Record({
 
 export type ReauthToken = rt.Static<typeof ReauthToken>
 
+export type ReauthVerifyOptions = {
+  maxAge: string,
+  clockTimestamp?: number
+}
+
 export type VerifyOptions = {
   maxAge?: string,
   clockTimestamp?: number
@@ -72,8 +77,12 @@ export const verifyReauthToken = (
   token: string,
   key: string,
   requiredMethods: ReauthMethodPredicate | ReauthenticationMethod[],
-  options: VerifyOptions = {}
+  options: ReauthVerifyOptions
 ): ReauthToken => {
+
+  if (!options.maxAge) {
+    throw new Error("verifyReauthToken requires a maxAge option")
+  }
 
   const contents = verifyJwt(token, key, options)
   if (!ReauthToken.guard(contents)) {
