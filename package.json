@@ -23,6 +23,7 @@
     "@types/node": "^13.13.0",
     "jest": "^25.4.0",
     "ts-jest": "^25.4.0",
+    "typedoc": "^0.17.8",
     "typescript": "^3.8.3"
   },
   "dependencies": {
