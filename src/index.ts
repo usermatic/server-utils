@@ -33,19 +33,43 @@ export const ReauthToken = rt.Record({
 
 export type ReauthToken = rt.Static<typeof ReauthToken>
 
-export type ReauthVerifyOptions = {
-  maxAge: string,
-  clockTimestamp?: number
-}
-
 export type VerifyOptions = {
+  /**
+   * The maximum allowable age of the JWT to be verified.
+   * Note that this is independent of the expiration time of the JWT.
+   * The JWT will be invalid if either its expiration time *or* the maxAge
+   * option has elapsed.
+   */
   maxAge?: string,
+  /**
+   * The timestamp to use as the current time, to check both the maxAge
+   * and expiration time parameter. If this option is omitted, the current
+   * system time is used.
+   */
   clockTimestamp?: number
 }
 
+/**
+ * Verify a JWT with arbitrary contents, using the provided key.
+ *
+ * Generally, you should use verifyAuthToken or verifyReauthToken to verify
+ * the specific type of token that you have, as those methods also verify
+ * that the token payload is well-formed, whereas this method only verifies
+ * the JWT signature.
+ */
 export const verifyJwt = (
+  /**
+   * A signed, encoded JWT.
+   */
   token: string,
+  /**
+   * The key to use to verify the JWT. The key must be a minimum of 27 bytes
+   * long, to guard against accidental use of weak or empty keys in your application.
+   */
   key: string,
+  /**
+   * optional, additional verification options.
+   */
   options: VerifyOptions = {}
 ): string | object => {
 
@@ -59,9 +83,33 @@ export const verifyJwt = (
   return jwt.verify(token, key, { ...options, algorithms: ['HS256'] })
 }
 
+/**
+ * Verify an authorization token provided by the client using a key
+ * (which is typically the application secret key).
+ *
+ * If verification fails, an exception is thrown.
+ *
+ * Verification can fail for the following reasons:
+ *
+ * 1. JWT verification can fail. This can be due to an invalid signature or an
+ * expired token.
+ *
+ * 2. The contents of the token may not be a valid AuthToken.
+ */
 export const verifyAuthToken = (
+  /**
+   * The encoded, signed JWT.
+   */
   token: string,
+  /**
+   * The key to use to verify the JWT. Typically the Usermatic application
+   * secret key. The key must be a minimum of 27 bytes long, to guard against
+   * accidental use of weak or empty keys in your application.
+   */
   key: string,
+  /**
+   * Optional additional options for verification.
+   */
   options: VerifyOptions = {}
 ): AuthToken => {
   const verified = verifyJwt(token, key, options)
@@ -73,11 +121,37 @@ export const verifyAuthToken = (
 
 export type ReauthMethodPredicate = (methods: ReauthenticationMethod[]) => boolean
 
+/**
+ * Verify a reauthorization token.
+ */
 export const verifyReauthToken = (
+  /**
+   * The encoded reauthorization JWT.
+   */
   token: string,
+  /**
+   * The key to use to verify the JWT. Typically the Usermatic application
+   * secret key. The key must be a minimum of 27 bytes long, to guard against
+   * accidental use of weak or empty keys in your application.
+   */
   key: string,
+  /**
+   * Either:
+   *
+   * A list of required reauthentication methods. For instance, to require
+   * that the reauthentication token was signed as a result of password
+   * re-authentication, pass ['password'] here. If multiple methods are passed,
+   * all must be present in the reauthentication token.
+   *
+   * ...or a function which is passed the list of reauthentication methods
+   * in the signed token, which then returns true or false to indicate whether
+   * the reauthentication methods were sufficient.
+   */
   requiredMethods: ReauthMethodPredicate | ReauthenticationMethod[],
-  options: ReauthVerifyOptions
+  /**
+   * Optional additional options for verification.
+   */
+  options: VerifyOptions
 ): ReauthToken => {
 
   if (!options.maxAge) {
